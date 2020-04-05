@@ -1,0 +1,133 @@
+import pandas as pd
+import numpy as np
+file_to_load = "Resources/purchase_data.csv"
+
+purchase_data = pd.read_csv(file_to_load)
+purchase_data.head()
+
+purchase_data.rename(columns = {'Purchase ID':'Purchase_ID',"SN":'Player', 'Item ID':'Item_ID','Item Name':'Item_Name'},inplace=True)
+purchase_data.head()
+totalnunplayers=purchase_data.groupby("Player")["Player"].nunique().count()
+print('Total Number of Players: '+ str(totalnunplayers))
+totalplayers=purchase_data['Player'].nunique()
+totalplayers
+uniqitems=purchase_data['Item_Name'].nunique()
+uniqitems
+avgprice=purchase_data['Price'].mean()
+avgprice
+totalpurchase=purchase_data['Purchase_ID'].nunique()
+totalpurchase
+totalrevenue=purchase_data['Price'].sum()
+totalrevenue
+summary_tbl=pd.DataFrame([[totalplayers, uniqitems,(avgprice),totalpurchase,(totalrevenue)]],columns=['Total_Number_of_Players', 'Number _of_Unique_Items', 'Average_Purchase_Price','Total_Number_of_Purchases','Total_Revenue'])
+summary_tbl_format=summary_tbl.style.format({"Total_Number_of_Players":"{:,}".format,"Number _of_Unique_Items":"{:,}".format,"Average_Purchase_Price":"${:,.2f}".format, "Total_Revenue":"${:,.2f}".format})
+summary_tbl_format
+group_gender=purchase_data.groupby("Gender")["Player"].nunique()
+group_gender.rename(columns= {'Player':'Total_Players'}, inplace=True)
+perofplayers=((group_gender*100)/totalplayers)
+
+perofplayers
+summary_1 = pd.concat([group_gender,perofplayers], axis=1)
+
+summary_1.reset_index(inplace=True)
+
+summary_1
+
+summary_1.rename(columns={0:'Total_Players',1:"Percentage_of_Players"}, inplace=True)
+
+summary_1sort=summary_1.sort_values('Total_Players',ascending=False)
+
+summary_1sortindex=summary_1sort.reset_index(drop=True)
+
+summary_1sortindex_format=summary_1sortindex.style.format({"Total_Players":"{:,}".format,"Percentage_of_Players":"{:.4f}%".format})
+
+summary_1sortindex_format
+purchase_gender=purchase_data.groupby("Gender")["Purchase_ID"].count()
+purchase_gender
+total_price_gender=purchase_data.groupby("Gender")["Price"].sum()
+total_price_gender
+total_price_gender.rename(columns= {'price':'Total_Purchase_Value'}, inplace=True)
+avgpurchase_gender=purchase_data.groupby("Gender")["Price"].mean()
+avgpurchase_gender
+summary_2 = pd.concat([purchase_gender,total_price_gender,avgpurchase_gender], axis=1)
+
+summary_2
+summary_2.rename(columns={"Purchase_ID":"Total_Purchase_by_Gender",0:'Total_Purchase_Value','Price':"Avg_Purchase_Price"}, inplace=True)
+
+summary_2sort=summary_2.sort_values('Total_Purchase_by_Gender',ascending=False)
+summary_2sort_format=summary_2sort.style.format({"Total_Purchase_by_Gender":"{:,}".format,"Total_Purchase_Value":"${:,.2f}".format,"Avg_Purchase_Price":"${:,.2f}".format})
+
+summary_2sort_format
+agemax=purchase_data[purchase_data['Age']==purchase_data['Age'].max()]
+agemin=purchase_data[purchase_data['Age']==purchase_data['Age'].min()]
+bins=[0,10,14,19,24,29,34,39,50]
+labels=['<10','10 - 14','15 - 19','20 - 24','25 - 29','30 - 34','35 - 39','40+']
+purchase_data_binned =purchase_data.groupby (pd.cut(purchase_data['Age'], bins=bins, labels=labels)).nunique()
+percentageplayer=(purchase_data_binned['Player']/totalplayers)*100
+percentageplayer.rename(columns={"Player":"Percentage_of_Players"}, inplace=True)
+totalcount=purchase_data_binned["Player"]
+totalcountrenam=totalcount.rename(columns={"Player":"Total_Count"}, inplace=True)
+totalcountrenam
+
+Summary_3=pd.concat([totalcountrenam,percentageplayerrenam], axis=1)
+Summary_3.rename(columns={0:"Total_Count",1:"Percentage_of_Players"}, inplace=True)
+Summary_3_format = Summary_3.style.format({"Percentage_of_Players":"{:,.2f}%".format})
+Summary_3_format
+
+purchasecount=purchase_data_binned['Purchase_ID']
+purchasecount_renam=purchasecount.rename(columns={"Purchase_ID":"Purchase_Count"}, inplace=True)
+purchasecount_renam
+bins=[0,10,14,19,24,29,34,39,50]
+
+labels=['<10','10 - 14','15 - 19','20 - 24','25 - 29','30 - 34','35 - 39','40+']
+purchase_data_binned_totalvalue = purchase_data.groupby (pd.cut(purchase_data['Age'], bins=bins, labels=labels)).sum()
+purchase_data_binned_totalvalue
+purchase_data_binned_totalvalue['Total_Purchase_Value']
+purchase_data_binned_avg = purchase_data.groupby (pd.cut(purchase_data['Age'], bins=bins, labels=labels)).mean()
+purchase_data_binned_avg['Price']
+AvgPurchasetotalperperson = purchase_data_binned_totalvalue['Total_Purchase_Value']/purchase_data_binned["Player"]
+AvgPurchasetotalperperson
+Summary_4=pd.concat([purchasecount_renam,purchase_data_binned_avg['Price'],purchase_data_binned_totalvalue['Total_Purchase_Value'],AvgPurchasetotalperperson], axis=1)
+Summary_4.rename(columns={0:"Purchase_Count",'Price':'Avg_Purchase_Price',1:"Avg_Total_Purchase_per_Person"}, inplace=True)
+Summary_4_format = Summary_4.style.format({"Avg_Purchase_Price":"${:,.2f}".format,"Total_Purchase_Value":"${:,.2f}".format,"Avg_Total_Purchase_per_Person":"${:,.2f}".format})
+Summary_4_format
+purchase_data.head()
+SNpurchasecount=purchase_data.groupby('Player')["Purchase_ID"].count()
+SNpurchasecount.head()
+SNavgpurchaseprice=purchase_data.groupby('Player')["Price"].mean()
+SNavgpurchaseprice.head()
+SNtotalpurchasevalue=purchase_data.groupby('Player')["Price"].sum()
+SNtotalpurchasevalue.rename(columns={'Price':'Avg_Purchase_Price'}, inplace=True)
+SNtotalpurchasevalue.head()
+
+Summary_5=pd.concat([SNpurchasecount,SNavgpurchaseprice,SNtotalpurchasevalue], axis=1)
+Summary_5.rename(columns={'Purchase_ID':"Purchase_Count",'Price':'Avg_Purchase_Price',0:"Total_Purchase_Value"}, inplace=True)
+Summary_5sort=Summary_5.sort_values('Total_Purchase_Value',ascending=False).head()
+Summary_5_format = Summary_5sort.style.format({"Avg_Purchase_Price":"${:,.2f}".format,"Total_Purchase_Value":"${:,.2f}".format})
+Summary_5_format
+MPtotalpurchasecount=purchase_data.groupby(['Item_ID','Item_Name'])['Purchase_ID'].count()
+MPtotalpurchasecount.head()
+MPitemprice=purchase_data.groupby(['Item_ID','Item_Name'])['Price'].mean()
+MPitemprice.head()
+
+MPtotalpurchasevalue=purchase_data.groupby(['Item_ID','Item_Name'])['Price'].sum()
+MPtotalpurchasevalue.rename(columns={'Price':'Total_Purchase_Value'}, inplace=True)
+MPtotalpurchasevalue.head()
+
+
+
+MPtotalpurchasevalue=purchase_data.groupby(['Item_ID','Item_Name'])['Price'].sum()
+MPtotalpurchasevalue.rename(columns={'Price':'Total_Purchase_Value'}, inplace=True)
+MPtotalpurchasevalue.head()
+​
+MPtotalpurchasevalue=purchase_data.groupby(['Item_ID','Item_Name'])['Price'].sum()
+MPtotalpurchasevalue.rename(columns={'Price':'Total_Purchase_Value'}, inplace=True)
+MPtotalpurchasevalue.head()
+Summary_6=pd.concat([MPtotalpurchasecount,MPitemprice,MPtotalpurchasevalue], axis=1)
+Summary_6.rename(columns={'Purchase_ID':"Purchase_Count",'Price':"Iteam_Price",0:"Total_Purchase_Value"}, inplace=True)
+Summary_6sort=Summary_6.sort_values('Purchase_Count',ascending=False).head()
+Summary_6_format = Summary_6sort.style.format({"Item_Price":"${:,.2f}".format,"Total_Purchase_Value":"${:,.2f}".format})
+Summary_6_format
+
+Summary_6sort2=Summary_6.sort_values('Total_Purchase_Value',ascending=False).head()
+Summary_6sort2
